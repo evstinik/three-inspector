@@ -8,6 +8,8 @@ export interface ThreeInspectorProps {
 export function ThreeInspector({ children, ...props }: ThreeInspectorProps) {
   useFrame(() => {})
 
+  console.log('Hello, world!')
+
   return (
     <group name='ThreeInspector' {...props}>
       {children}
