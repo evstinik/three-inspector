@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { Object3D, Scene, Camera, WebGLRenderer, Vector3 } from 'three'
+import { Object3D, Scene, Camera, WebGLRenderer, Vector3, PerspectiveCamera } from 'three'
 import { useFilterStore } from './objectFilters'
 
 // Define the OutlinerNode interface directly in this module
@@ -51,6 +51,12 @@ interface InspectorState {
   // Filter state
   searchTerm: string
   setSearchTerm: (term: string) => void
+
+  // Free Look mode state
+  isFreeLookActive: boolean
+  freeLookCamera: PerspectiveCamera | null
+  activateFreeLook: (active: boolean) => void
+  setFreeLookCamera: (camera: PerspectiveCamera | null) => void
 }
 
 // Create the store with subscribeWithSelector middleware to allow subscribing to specific state changes
@@ -88,12 +94,14 @@ export const useInspectorStore = create<InspectorState>()(
     focusObject: (object) => {
       if (!object) return
 
-      // This will be implemented in Phase 5 with camera controls
-      // For now, we just store the selection
+      // Store the selection
       set({ selectedObject: object })
 
-      // Add a comment to remind us to implement camera focus in Phase 5
-      console.log('Focus on object will be implemented in Phase 5 (Camera & Navigation)')
+      // Emit a focus event that our controls will listen to
+      const { renderer } = get()
+      if (renderer) {
+        renderer.domElement.dispatchEvent(new CustomEvent('freelook:focus'))
+      }
     },
 
     // Scene graph
@@ -109,7 +117,13 @@ export const useInspectorStore = create<InspectorState>()(
 
     // Filter state
     searchTerm: '',
-    setSearchTerm: (searchTerm) => set({ searchTerm })
+    setSearchTerm: (searchTerm) => set({ searchTerm }),
+
+    // Free Look mode state
+    isFreeLookActive: false,
+    freeLookCamera: null,
+    activateFreeLook: (active) => set({ isFreeLookActive: active }),
+    setFreeLookCamera: (camera) => set({ freeLookCamera: camera })
   }))
 )
 

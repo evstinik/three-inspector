@@ -75,10 +75,10 @@ This project is a tool for all Three.js developers to simplify inspection of Thr
 
 ### Phase 5: Camera & Navigation
 
-- [ ] Implement Free Look camera mode
-- [ ] Create WASD movement controls
-- [ ] Add mouse look functionality
-- [ ] Implement speed boost (shift) and vertical movement (Q/E)
+- [x] Implement Free Look camera mode
+- [x] Create WASD movement controls
+- [x] Add mouse look functionality
+- [x] Implement speed boost (shift) and vertical movement (Q/E)
 - [ ] Create object focus functionality (F key and magnifying glass)
 
 ### Phase 6: Object Inspection

@@ -13,6 +13,10 @@ export {
   type DetailPanelEntry
 } from './components/ui/details/registry'
 
+// Export camera controls
+export { FreeLookControls } from './components/controls/FreeLookControlsComponent'
+export { useFreeLookControls } from './components/controls/useFreeLookControls'
+
 // Export utility functions that might be useful for users
 export {
   findObjectByName,

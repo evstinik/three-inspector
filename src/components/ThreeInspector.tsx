@@ -10,6 +10,7 @@ import {
 import { InspectorUI } from './ui/InspectorUI'
 import { useInspectorEvents } from './ui/useInspectorEvents'
 import { Object3D } from 'three'
+import { FreeLookControls } from './controls/FreeLookControlsComponent'
 
 export interface ThreeInspectorProps {
   children?: React.ReactNode
@@ -128,22 +129,6 @@ export function ThreeInspector({ children, ...props }: ThreeInspectorProps) {
     }
   }, [scene, camera, gl, setScene, setCamera, setRenderer, updateSceneGraph])
 
-  // Handle rendering loop takeover when inspector is open
-  useFrame(() => {
-    if (isOpen) {
-      // When inspector is open:
-      // 1. Mark scene as being rendered by inspector
-      scene.userData.isRenderedByInspector = true
-
-      // 2. Render scene with inspector camera
-      // (This will be implemented in Phase 5 with camera controls)
-    } else {
-      // When inspector is closed:
-      // Remove flag and let the application handle rendering
-      scene.userData.isRenderedByInspector = false
-    }
-  })
-
   return (
     <>
       {/* The wrapped scene content */}
@@ -152,7 +137,12 @@ export function ThreeInspector({ children, ...props }: ThreeInspectorProps) {
       </group>
 
       {/* The inspector UI will render here when isOpen is true */}
-      {isOpen && <InspectorUI />}
+      {isOpen && (
+        <>
+          <InspectorUI />
+          <FreeLookControls />
+        </>
+      )}
     </>
   )
 }

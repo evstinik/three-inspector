@@ -113,6 +113,19 @@ function Node({ node, style, dragHandle }: NodeRendererProps<OutlinerNode>) {
   // Calculate the indentation level from the style.paddingLeft
   const indentLevel = Number(style.paddingLeft?.toString().replace('px', '') || 0) / 24
 
+  // Get the focus handler from the context
+  const { getObjectById, focusObject } = useInspectorStore()
+
+  // Handle focus icon click
+  const handleFocusClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+
+    const object = getObjectById(node.id)
+    if (object) {
+      focusObject(object)
+    }
+  }
+
   return (
     <div
       ref={dragHandle}
@@ -140,8 +153,8 @@ function Node({ node, style, dragHandle }: NodeRendererProps<OutlinerNode>) {
         <span className='node-name'>{node.data.name || '<unnamed>'}</span>
       </div>
 
-      {/* Focus icon - will be implemented in Phase 5 */}
-      <span className='focus-icon' title='Focus on object (F)'>
+      {/* Focus icon - implemented in Phase 5 */}
+      <span className='focus-icon' title='Focus on object (F)' onClick={handleFocusClick}>
         <svg
           width='16'
           height='16'
@@ -200,29 +213,27 @@ export function SceneGraph({
   }
 
   return (
-    <div className='scene-graph-container'>
-      <Tree
-        ref={treeRef}
-        data={sceneGraph}
-        idAccessor={idAccessor}
-        openByDefault={false}
-        selectionFollowsFocus={false}
-        rowHeight={28}
-        indent={24}
-        paddingTop={4}
-        paddingBottom={4}
-        searchTerm={searchTerm}
-        searchMatch={searchMatch}
-        selection={selectedId}
-        onActivate={handleActivate}
-        disableDrag={true}
-        disableDrop={true}
-        disableMultiSelection={true}
-        className='scene-graph-tree'
-      >
-        {Node}
-      </Tree>
-    </div>
+    <Tree
+      ref={treeRef}
+      data={sceneGraph}
+      idAccessor={idAccessor}
+      openByDefault={false}
+      selectionFollowsFocus={false}
+      rowHeight={28}
+      indent={24}
+      paddingTop={4}
+      paddingBottom={4}
+      searchTerm={searchTerm}
+      searchMatch={searchMatch}
+      selection={selectedId}
+      onActivate={handleActivate}
+      disableDrag={true}
+      disableDrop={true}
+      disableMultiSelection={true}
+      className='scene-graph-tree'
+    >
+      {Node}
+    </Tree>
   )
 }
 
