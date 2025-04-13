@@ -49,5 +49,9 @@
     "development"
   ],
   "author": "Nikita Evstigneev",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@mantine/hooks": "^7.17.4",
+    "zustand": "^5.0.3"
+  }
 }

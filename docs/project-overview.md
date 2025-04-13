@@ -52,11 +52,11 @@ This project is a tool for all Three.js developers to simplify inspection of Thr
 
 ### Phase 2: Core Architecture
 
-- [ ] Design state management structure with zustand
-- [ ] Create Inspector component architecture
-- [ ] Implement keyboard shortcut system (CTRL+I / CMD+I)
-- [ ] Setup rendering loop takeover mechanism
-- [ ] Implement events system for inspector open/close
+- [x] Design state management structure with zustand
+- [x] Create Inspector component architecture
+- [x] Implement keyboard shortcut system (CTRL+I / CMD+I)
+- [x] Setup rendering loop takeover mechanism
+- [x] Implement events system for inspector open/close
 
 ### Phase 3: Scene Integration
 
@@ -110,6 +110,18 @@ This project is a tool for all Three.js developers to simplify inspection of Thr
 - When project is uploaded to npm registry or is packed to tar it should only contain `dist` and other required files like package.json. It should omit "src".
 - `pnpm dev` should run example React Three Fiber app on vite, that integrates the library with hot module replacement and react fast refresh support
 - `pnpm test` should run React Three Fiber component tests via `@react-three/test-renderer`.
+
+- For keyboard shortcuts use utility hook `useHotkeys()`, example:
+
+```ts
+useHotkeys([
+  ['mod+J', () => console.log('Toggle color scheme')],
+  ['ctrl+K', () => console.log('Trigger search')],
+  ['alt+mod+shift+X', () => console.log('Rick roll')]
+])
+```
+
+- Put interfaces describing model objects as close to the relative module as possible, do not put everything in `types.d.ts`
 
 Here are example codes that I used for building an outliner earlier:
 
