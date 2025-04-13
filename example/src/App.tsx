@@ -3,6 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import { Mesh } from 'three'
 import { ThreeInspector } from 'three-inspector'
+import { HierarchyWithLongNames } from './HierarchyWithLongNames'
 
 function Box() {
   const ref = useRef<Mesh>(null)
@@ -38,6 +39,9 @@ function Scene() {
         </group>
       </group>
 
+      {/* Add HierarchyWithLongNames component */}
+      <HierarchyWithLongNames />
+
       <PerspectiveCamera position={[0.75, 0.5, 1]} makeDefault />
       <Environment preset='warehouse' background={false} />
       <OrbitControls zoomSpeed={2} screenSpacePanning={false} makeDefault enableDamping={false} />
@@ -58,7 +62,7 @@ function Scene() {
 export default function App() {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      <Canvas>
+      <Canvas frameloop='demand'>
         <Scene />
         <ThreeInspector />
       </Canvas>

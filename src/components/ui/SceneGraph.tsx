@@ -24,6 +24,7 @@ import {
   IconBone
 } from '@tabler/icons-react'
 import './InspectorUI.css'
+import { useResizeObserver } from '@mantine/hooks'
 
 // The idAccessor function to use the objectId as the tree node id
 const idAccessor = (node: OutlinerNode) => node.objectId
@@ -176,6 +177,8 @@ interface SceneGraphProps {
   searchTerm: string
   onNodeSelect: (nodeId: string) => void
   onNodeFocus: (nodeId: string) => void
+  width: number
+  height: number
 }
 
 /**
@@ -186,7 +189,9 @@ export function SceneGraph({
   selectedObject,
   searchTerm,
   onNodeSelect,
-  onNodeFocus
+  onNodeFocus,
+  width,
+  height
 }: SceneGraphProps) {
   const treeRef = useRef<TreeApi<OutlinerNode>>(null)
 
@@ -231,6 +236,8 @@ export function SceneGraph({
       disableDrop={true}
       disableMultiSelection={true}
       className='scene-graph-tree'
+      width={width}
+      height={height}
     >
       {Node}
     </Tree>
@@ -243,8 +250,6 @@ export function SceneGraph({
 export function SceneGraphContainer() {
   const { sceneGraph, selectedObject, selectObject, getObjectById, focusObject, searchTerm } =
     useInspectorStore()
-
-  const containerRef = useRef<HTMLDivElement>(null)
 
   // Handle click on a node in the outliner
   const handleNodeSelect = (nodeId: string) => {
@@ -279,6 +284,8 @@ export function SceneGraphContainer() {
     }
   }, [])
 
+  const [containerRef, rect] = useResizeObserver()
+
   return (
     <div ref={containerRef} className='scene-graph-container'>
       <SceneGraph
@@ -287,6 +294,8 @@ export function SceneGraphContainer() {
         searchTerm={searchTerm}
         onNodeSelect={handleNodeSelect}
         onNodeFocus={handleNodeFocus}
+        width={rect.width}
+        height={rect.height}
       />
     </div>
   )
