@@ -29,6 +29,15 @@ function Scene() {
       <pointLight position={[10, 10, 10]} />
       <Box />
 
+      <group name='some-group'>
+        <group name='inner-element'>
+          <mesh name='mesh-inside' position={[-0.5, 0, -0.5]}>
+            <meshStandardMaterial color='blue' />
+            <boxGeometry args={[0.1, 0.1, 0.1]} />
+          </mesh>
+        </group>
+      </group>
+
       <PerspectiveCamera position={[0.75, 0.5, 1]} makeDefault />
       <Environment preset='warehouse' background={false} />
       <OrbitControls zoomSpeed={2} screenSpacePanning={false} makeDefault enableDamping={false} />

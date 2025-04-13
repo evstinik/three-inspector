@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { useThree } from '@react-three/fiber'
-import { useInspectorStore } from '../../store'
+import { useInspectorStore, useFilterStore, createNameFilter, createTypeFilter } from '../../store'
+import { SceneGraphContainer } from './SceneGraph'
+import { ObjectDetailsContainer } from './ObjectDetails'
 import './InspectorUI.css'
 
 // Interface for the InspectorUI component props
@@ -13,6 +15,40 @@ interface InspectorUIProps {
  * The actual DOM-based UI component that will be rendered into the root
  */
 export function InspectorUIContent({ onClose }: { onClose: () => void }) {
+  const { refreshSceneGraph } = useInspectorStore()
+  const { filters, addFilter, removeFilter, toggleFilter, clearFilters } = useFilterStore()
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Handle filter changes
+  const handleAddFilter = () => {
+    // Create a name filter based on the search term if it exists
+    if (searchTerm) {
+      addFilter(createNameFilter(searchTerm))
+      setSearchTerm('') // Clear the search term after adding filter
+
+      // Refresh the scene graph to apply the filter
+      refreshSceneGraph()
+    }
+  }
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    clearFilters()
+    refreshSceneGraph()
+  }
+
+  // Handle toggle filter and refresh scene graph
+  const handleToggleFilter = (id: string) => {
+    toggleFilter(id)
+    refreshSceneGraph()
+  }
+
+  // Handle remove filter and refresh scene graph
+  const handleRemoveFilter = (id: string) => {
+    removeFilter(id)
+    refreshSceneGraph()
+  }
+
   return (
     <div className='three-inspector-ui'>
       <div className='three-inspector-header'>
@@ -22,15 +58,59 @@ export function InspectorUIContent({ onClose }: { onClose: () => void }) {
 
       <div className='three-inspector-content'>
         <div className='three-inspector-panel three-inspector-outliner'>
-          {/* Outliner panel will be implemented in Phase 4 */}
           <h2>Outliner</h2>
-          <div className='placeholder-content'>Scene graph will appear here</div>
+
+          {/* Search and filter controls */}
+          <div className='outliner-controls'>
+            <input
+              type='text'
+              placeholder='Search objects...'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddFilter()}
+            />
+            <button onClick={handleAddFilter}>Add Filter</button>
+          </div>
+
+          {/* Active filters display */}
+          {filters.length > 0 && (
+            <div className='active-filters'>
+              <div className='filter-header'>
+                <h3>Active Filters</h3>
+                <button className='filter-clear-btn' onClick={handleClearFilters}>
+                  Clear All
+                </button>
+              </div>
+              {filters.map((filter) => (
+                <div key={filter.id} className='filter-tag'>
+                  <span>
+                    {filter.type}: {filter.pattern}
+                  </span>
+                  <button
+                    className={`filter-toggle-btn ${filter.enabled ? 'enabled' : 'disabled'}`}
+                    onClick={() => handleToggleFilter(filter.id)}
+                  >
+                    {filter.enabled ? 'On' : 'Off'}
+                  </button>
+                  <button
+                    className='filter-remove-btn'
+                    onClick={() => handleRemoveFilter(filter.id)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Scene graph display using our dedicated component */}
+          <SceneGraphContainer />
         </div>
 
         <div className='three-inspector-panel three-inspector-details'>
-          {/* Object details panel will be implemented in Phase 4 */}
           <h2>Object Details</h2>
-          <div className='placeholder-content'>Selected object properties will appear here</div>
+          {/* Object details using our dedicated component */}
+          <ObjectDetailsContainer />
         </div>
       </div>
     </div>

@@ -1,43 +1,96 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { useInspectorStore } from '../../store'
+import { Object3D } from 'three'
 
 /**
- * Custom hook to handle inspector events
- * Dispatches events when the inspector opens or closes
+ * Hook that sets up custom events for inspector actions
+ * These events can be used by external code to interact with the inspector
  */
 export function useInspectorEvents() {
   const { gl } = useThree()
-  const { isOpen } = useInspectorStore()
-  const prevIsOpenRef = useRef(isOpen)
+  const { isOpen, open, close, selectObject, focusObject, scene, refreshSceneGraph } =
+    useInspectorStore()
 
   useEffect(() => {
-    // Skip if state hasn't changed
-    if (prevIsOpenRef.current === isOpen) return
+    if (!gl.domElement) return
 
-    // Get the canvas element
-    const canvas = gl.domElement
-
-    // Dispatch the appropriate event
-    if (isOpen) {
-      // Dispatch inspector opened event
-      const openEvent = new CustomEvent('inspectorOpened', {
-        detail: { timestamp: Date.now() }
-      })
-      canvas.dispatchEvent(openEvent)
-      console.log('Inspector opened')
-    } else {
-      // Dispatch inspector closed event
-      const closeEvent = new CustomEvent('inspectorClosed', {
-        detail: { timestamp: Date.now() }
-      })
-      canvas.dispatchEvent(closeEvent)
-      console.log('Inspector closed')
+    // Define event handlers
+    const handleInspectorToggle = () => {
+      useInspectorStore.getState().toggle()
     }
 
-    // Update ref for the next render
-    prevIsOpenRef.current = isOpen
-  }, [isOpen, gl])
+    const handleObjectSelect = (event: CustomEvent<{ object: Object3D }>) => {
+      selectObject(event.detail.object)
+    }
 
-  return null
+    const handleObjectFocus = (event: CustomEvent<{ object: Object3D }>) => {
+      focusObject(event.detail.object)
+    }
+
+    const handleSceneGraphRefresh = () => {
+      refreshSceneGraph()
+    }
+
+    // Add event listeners
+    gl.domElement.addEventListener('toggleInspector', handleInspectorToggle)
+    gl.domElement.addEventListener('objectSelected', handleObjectSelect as EventListener)
+    gl.domElement.addEventListener('objectFocused', handleObjectFocus as EventListener)
+    gl.domElement.addEventListener('refreshSceneGraph', handleSceneGraphRefresh)
+
+    // Dispatch events when inspector opens/closes
+    const dispatchInspectorStateChange = () => {
+      if (isOpen) {
+        const openEvent = new CustomEvent('inspectorOpened')
+        gl.domElement.dispatchEvent(openEvent)
+      } else {
+        const closeEvent = new CustomEvent('inspectorClosed')
+        gl.domElement.dispatchEvent(closeEvent)
+      }
+    }
+
+    // Subscribe to changes in the inspector open state
+    const unsubscribeFromOpenState = useInspectorStore.subscribe(
+      (state) => state.isOpen,
+      () => dispatchInspectorStateChange()
+    )
+
+    // Subscribe to changes in the selected object
+    const unsubscribeFromSelectedObject = useInspectorStore.subscribe(
+      (state) => state.selectedObject,
+      (selectedObject) => {
+        if (selectedObject) {
+          const event = new CustomEvent('objectSelected', {
+            detail: { object: selectedObject }
+          })
+          gl.domElement.dispatchEvent(event)
+        }
+      }
+    )
+
+    // Subscribe to changes in the scene graph
+    const unsubscribeFromSceneGraph = useInspectorStore.subscribe(
+      (state) => state.sceneGraph,
+      () => {
+        if (scene) {
+          const event = new CustomEvent('sceneGraphChanged', {
+            detail: { scene }
+          })
+          gl.domElement.dispatchEvent(event)
+        }
+      }
+    )
+
+    // Cleanup event listeners when component unmounts
+    return () => {
+      gl.domElement.removeEventListener('toggleInspector', handleInspectorToggle)
+      gl.domElement.removeEventListener('objectSelected', handleObjectSelect as EventListener)
+      gl.domElement.removeEventListener('objectFocused', handleObjectFocus as EventListener)
+      gl.domElement.removeEventListener('refreshSceneGraph', handleSceneGraphRefresh)
+
+      unsubscribeFromOpenState()
+      unsubscribeFromSelectedObject()
+      unsubscribeFromSceneGraph()
+    }
+  }, [gl.domElement, isOpen, open, close, selectObject, focusObject, scene, refreshSceneGraph])
 }

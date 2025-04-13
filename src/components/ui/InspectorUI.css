@@ -5,8 +5,8 @@
   top: 10px;
   right: 10px;
   bottom: 10px;
-  width: 300px;
-  background-color: rgba(30, 30, 30, 0.9);
+  width: 350px;
+  background-color: rgba(30, 30, 30, 0.95);
   color: #fff;
   border-radius: 4px;
   font-family:
@@ -17,6 +17,7 @@
   overflow: hidden;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   z-index: 1000;
+  backdrop-filter: blur(5px);
 }
 
 .three-inspector-header {
@@ -69,10 +70,12 @@
 .three-inspector-outliner {
   flex: 1;
   border-bottom: 1px solid #444;
+  overflow-y: auto;
 }
 
 .three-inspector-details {
-  height: 200px;
+  height: 300px;
+  overflow-y: auto;
 }
 
 .placeholder-content {
@@ -82,4 +85,223 @@
   padding: 10px;
   background-color: rgba(50, 50, 50, 0.5);
   border-radius: 3px;
+}
+
+/* Scene graph outliner styling */
+.outliner-controls {
+  display: flex;
+  margin-bottom: 8px;
+  align-items: center;
+  gap: 8px;
+}
+
+.outliner-controls input {
+  flex: 1;
+  background-color: rgba(60, 60, 60, 0.8);
+  border: 1px solid #555;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.outliner-controls button {
+  background-color: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.outliner-controls button:hover {
+  background-color: #1976d2;
+}
+
+.active-filters {
+  margin-bottom: 10px;
+  background-color: rgba(50, 50, 50, 0.5);
+  border-radius: 3px;
+  padding: 8px;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.filter-header h3 {
+  margin: 0;
+  font-size: 12px;
+  color: #bbb;
+}
+
+.filter-clear-btn {
+  background-color: rgba(80, 80, 80, 0.8);
+  color: #ddd;
+  border: none;
+  border-radius: 2px;
+  padding: 2px 6px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.filter-clear-btn:hover {
+  background-color: rgba(100, 100, 100, 0.8);
+}
+
+.filter-tag {
+  display: flex;
+  align-items: center;
+  background-color: rgba(70, 70, 70, 0.8);
+  border-radius: 3px;
+  margin-bottom: 4px;
+  padding: 4px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.filter-tag span {
+  flex: 1;
+}
+
+.filter-tag button {
+  background-color: rgba(40, 40, 40, 0.8);
+  color: #aaa;
+  border: none;
+  border-radius: 2px;
+  padding: 2px 4px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.filter-tag button:hover {
+  background-color: rgba(60, 60, 60, 0.8);
+  color: #fff;
+}
+
+.filter-tag button.filter-toggle-btn {
+  min-width: 30px;
+}
+
+.filter-tag button.filter-toggle-btn.enabled {
+  background-color: #4caf50;
+  color: white;
+}
+
+.filter-tag button.filter-toggle-btn.disabled {
+  background-color: #777;
+  color: #ddd;
+}
+
+.filter-tag button.filter-remove-btn {
+  background-color: #f44336;
+  color: white;
+  font-weight: bold;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.scene-graph {
+  margin-top: 10px;
+}
+
+.outliner-node {
+  padding: 4px 8px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 2px;
+  margin-bottom: 1px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.outliner-node:hover {
+  background-color: rgba(70, 70, 70, 0.8);
+}
+
+.outliner-node.selected {
+  background-color: #2196f3;
+}
+
+.outliner-node.hidden {
+  opacity: 0.5;
+}
+
+.node-type {
+  color: #888;
+  margin-right: 8px;
+  font-size: 10px;
+  background-color: rgba(60, 60, 60, 0.8);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.outliner-node.selected .node-type {
+  color: #ddd;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.node-name {
+  flex: 1;
+}
+
+.node-content {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
+.toggle-expand {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  text-align: center;
+  margin-right: 4px;
+  font-size: 9px;
+  color: #bbb;
+  cursor: pointer;
+}
+
+.toggle-expand:hover {
+  color: white;
+}
+
+/* Object details panel styling */
+.object-details {
+  font-size: 12px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 4px;
+  align-items: center;
+}
+
+.detail-label {
+  width: 80px;
+  color: #aaa;
+}
+
+.detail-value {
+  flex: 1;
+  font-family: monospace;
+}
+
+.object-details h3 {
+  margin: 12px 0 8px 0;
+  font-size: 13px;
+  color: #bbb;
+  border-bottom: 1px solid #444;
+  padding-bottom: 4px;
 }

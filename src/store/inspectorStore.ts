@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { Object3D, Scene, Camera, WebGLRenderer } from 'three'
+import { Object3D, Scene, Camera, WebGLRenderer, Vector3 } from 'three'
+import { useFilterStore } from './objectFilters'
 
 // Define the OutlinerNode interface directly in this module
 export interface OutlinerNode {
@@ -12,6 +13,10 @@ export interface OutlinerNode {
   type: string
   /** Child nodes */
   children: OutlinerNode[]
+  /** Visibility state */
+  visible?: boolean
+  /** Whether this node is expanded in the outliner */
+  isExpanded?: boolean
 }
 
 // Main state interface for the inspector
@@ -33,10 +38,17 @@ interface InspectorState {
   // Selection state
   selectedObject: Object3D | null
   selectObject: (object: Object3D | null) => void
+  // Get object by ID
+  getObjectById: (id: string) => Object3D | null
+  // Focus on object (camera will focus on this object)
+  focusObject: (object: Object3D | null) => void
 
   // Scene graph
   sceneGraph: OutlinerNode[]
   updateSceneGraph: (nodes: OutlinerNode[]) => void
+  refreshSceneGraph: () => void
+  // Toggle node expansion in outliner
+  toggleNodeExpansion: (nodeId: string) => void
 
   // Filter state
   searchTerm: string
@@ -45,7 +57,7 @@ interface InspectorState {
 
 // Create the store with subscribeWithSelector middleware to allow subscribing to specific state changes
 export const useInspectorStore = create<InspectorState>()(
-  subscribeWithSelector((set) => ({
+  subscribeWithSelector((set, get) => ({
     // Inspector visibility
     isOpen: false,
     open: () => set({ isOpen: true }),
@@ -63,10 +75,57 @@ export const useInspectorStore = create<InspectorState>()(
     // Selection state
     selectedObject: null,
     selectObject: (object) => set({ selectedObject: object }),
+    getObjectById: (id) => {
+      const { scene } = get()
+      if (!scene) return null
+
+      let foundObject: Object3D | null = null
+      scene.traverse((obj) => {
+        if (obj.uuid === id) {
+          foundObject = obj
+        }
+      })
+      return foundObject
+    },
+    focusObject: (object) => {
+      if (!object) return
+
+      // This will be implemented in Phase 5 with camera controls
+      // For now, we just store the selection
+      set({ selectedObject: object })
+
+      // Add a comment to remind us to implement camera focus in Phase 5
+      console.log('Focus on object will be implemented in Phase 5 (Camera & Navigation)')
+    },
 
     // Scene graph
     sceneGraph: [],
     updateSceneGraph: (nodes) => set({ sceneGraph: nodes }),
+    refreshSceneGraph: () => {
+      const { scene } = get()
+      if (scene) {
+        const graph = buildSceneGraph(scene)
+        set({ sceneGraph: graph })
+      }
+    },
+    toggleNodeExpansion: (nodeId) => {
+      set((state) => {
+        // Create a deep copy of the scene graph to modify
+        const updateNodeExpansion = (nodes: OutlinerNode[]): OutlinerNode[] => {
+          return nodes.map((node) => {
+            if (node.objectId === nodeId) {
+              return { ...node, isExpanded: !node.isExpanded }
+            }
+            if (node.children.length > 0) {
+              return { ...node, children: updateNodeExpansion(node.children) }
+            }
+            return node
+          })
+        }
+
+        return { sceneGraph: updateNodeExpansion(state.sceneGraph) }
+      })
+    },
 
     // Filter state
     searchTerm: '',
@@ -74,14 +133,19 @@ export const useInspectorStore = create<InspectorState>()(
   }))
 )
 
-// Helper function to build the scene graph for the outliner
+// Helper function to build the scene graph for the outliner with filtering
 export function buildSceneGraph(root: Object3D): OutlinerNode[] {
+  // Get the filter predicate from the filter store
+  const shouldShowObject = useFilterStore.getState().shouldShowObject
+
   const createNodes = (obj: Object3D): OutlinerNode[] => {
-    return obj.children.map(
+    return obj.children.filter(shouldShowObject).map(
       (child): OutlinerNode => ({
         objectId: child.uuid,
         name: child.name || child.type,
         type: child.type,
+        visible: child.visible,
+        isExpanded: false, // Default to collapsed
         children: createNodes(child)
       })
     )
@@ -90,22 +154,42 @@ export function buildSceneGraph(root: Object3D): OutlinerNode[] {
   return createNodes(root)
 }
 
-// Setup listener for scene graph changes
+// Setup listener for scene graph changes with improved filtering
 export function setupSceneGraphListener(
   scene: Object3D,
-  onSceneGraphChanged: (scene: Object3D) => void
+  onSceneGraphChanged: (scene: Object3D) => void,
+  objectFilter?: (obj: Object3D) => boolean
 ): () => void {
   const registerNewObject = (event: { child: Object3D }) => {
-    event.child.traverse(subscribeToObject)
-    onSceneGraphChanged(scene)
+    let shouldNotify = false
+
+    event.child.traverse((obj) => {
+      // If we have no custom filter or the object passes the filter
+      if (!shouldNotify && (!objectFilter || objectFilter(obj))) {
+        shouldNotify = true
+      }
+      subscribeToObject(obj)
+    })
+
+    if (shouldNotify) {
+      onSceneGraphChanged(scene)
+    }
   }
 
   const unregisterObject = (event: { child: Object3D }) => {
+    let shouldNotify = false
+
     event.child.traverse((obj) => {
+      if (!shouldNotify && (!objectFilter || objectFilter(obj))) {
+        shouldNotify = true
+      }
       obj.removeEventListener('childadded', registerNewObject)
       obj.removeEventListener('childremoved', unregisterObject)
     })
-    onSceneGraphChanged(scene)
+
+    if (shouldNotify) {
+      onSceneGraphChanged(scene)
+    }
   }
 
   const subscribeToObject = (obj: Object3D) => {
@@ -124,4 +208,46 @@ export function setupSceneGraphListener(
       obj.removeEventListener('childremoved', unregisterObject)
     })
   }
+}
+
+// Helper functions for working with selected objects
+
+// Get the world position of an object
+export function getObjectWorldPosition(object: Object3D): Vector3 {
+  const position = new Vector3()
+  object.getWorldPosition(position)
+  return position
+}
+
+// Get the distance between two objects
+export function getDistanceBetweenObjects(objA: Object3D, objB: Object3D): number {
+  const posA = getObjectWorldPosition(objA)
+  const posB = getObjectWorldPosition(objB)
+  return posA.distanceTo(posB)
+}
+
+// Find an object in the scene by name (returns the first match)
+export function findObjectByName(scene: Object3D, name: string): Object3D | null {
+  let result: Object3D | null = null
+
+  scene.traverse((obj) => {
+    if (!result && obj.name === name) {
+      result = obj
+    }
+  })
+
+  return result
+}
+
+// Find objects in the scene by type
+export function findObjectsByType(scene: Object3D, type: string): Object3D[] {
+  const results: Object3D[] = []
+
+  scene.traverse((obj) => {
+    if (obj.type === type) {
+      results.push(obj)
+    }
+  })
+
+  return results
 }
