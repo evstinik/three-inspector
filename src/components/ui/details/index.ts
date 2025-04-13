@@ -1,0 +1,13 @@
+// Export all detail panel components
+export * from './ObjectDetailsPanel'
+export * from './panels/BasePanel'
+export * from './panels/ObjectPanel'
+export * from './panels/TransformPanel'
+export * from './panels/GeometryPanel'
+export * from './panels/MaterialPanel'
+export * from './panels/LightPanel'
+export * from './panels/CameraPanel'
+export * from './panels/MeshPanel'
+export * from './panels/InstancedMeshPanel'
+export * from './panels/SkinnedMeshPanel'
+export * from './registry'

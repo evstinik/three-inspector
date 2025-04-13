@@ -67,11 +67,11 @@ This project is a tool for all Three.js developers to simplify inspection of Thr
 
 ### Phase 4: User Interface
 
-- [ ] Design and implement main Inspector UI layout with Mantine
-- [ ] Create Outliner Panel using react-arborist
-- [ ] Implement object filtering and search in Outliner
-- [ ] Develop Object Detail Panel
-- [ ] Add object type icons in Outliner
+- [x] Design and implement main Inspector UI layout with Mantine
+- [x] Create Outliner Panel using react-arborist
+- [x] Implement object filtering and search in Outliner
+- [x] Develop Object Detail Panel
+- [x] Add object type icons in Outliner
 
 ### Phase 5: Camera & Navigation
 

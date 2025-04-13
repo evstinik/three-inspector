@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { useThree } from '@react-three/fiber'
 import { useInspectorStore, useFilterStore, createNameFilter, createTypeFilter } from '../../store'
 import { SceneGraphContainer } from './SceneGraph'
-import { ObjectDetailsContainer } from './ObjectDetails'
+import { ObjectDetailsPanelContainer } from './details'
 import './InspectorUI.css'
 
 // Interface for the InspectorUI component props
@@ -109,8 +109,8 @@ export function InspectorUIContent({ onClose }: { onClose: () => void }) {
 
         <div className='three-inspector-panel three-inspector-details'>
           <h2>Object Details</h2>
-          {/* Object details using our dedicated component */}
-          <ObjectDetailsContainer />
+          {/* Object details using our new modular component system */}
+          <ObjectDetailsPanelContainer />
         </div>
       </div>
     </div>

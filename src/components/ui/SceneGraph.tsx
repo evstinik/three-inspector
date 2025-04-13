@@ -1,82 +1,156 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Object3D } from 'three'
 import { useInspectorStore } from '../../store'
 import { OutlinerNode } from '../../store/inspectorStore'
 import { Tree, NodeApi, NodeRendererProps, TreeApi } from 'react-arborist'
+import {
+  IconChevronDown,
+  IconChevronRight,
+  IconCube,
+  IconCircleDashed,
+  IconBulb,
+  IconCamera,
+  IconBox,
+  IconCubeSend,
+  IconPerspective,
+  IconRectangle,
+  IconSphere,
+  IconCylinder,
+  IconCone,
+  IconShirt,
+  IconBrush,
+  IconSparkles,
+  IconShadow,
+  IconBone
+} from '@tabler/icons-react'
 import './InspectorUI.css'
-
-// Icon components
-const ChevronDown = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
-
-const ChevronRight = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
-
-const CubeIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
-
-const CircleIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4"/>
-  </svg>
-)
 
 // The idAccessor function to use the objectId as the tree node id
 const idAccessor = (node: OutlinerNode) => node.objectId
 
 /**
+ * Gets the appropriate icon component for a Three.js object type
+ */
+function getIconForObjectType(type: string, hasChildren: boolean): React.ReactElement {
+  // Base size for all icons
+  const iconProps = { size: 14, stroke: 1.5 }
+
+  switch (type) {
+    // Cameras
+    case 'PerspectiveCamera':
+      return <IconCamera {...iconProps} />
+    case 'OrthographicCamera':
+      return <IconPerspective {...iconProps} />
+
+    // Lights
+    case 'AmbientLight':
+    case 'DirectionalLight':
+    case 'PointLight':
+    case 'SpotLight':
+    case 'HemisphereLight':
+    case 'RectAreaLight':
+      return <IconBulb {...iconProps} />
+
+    // Meshes and Geometry
+    case 'Mesh':
+      return <IconCube {...iconProps} />
+    case 'InstancedMesh':
+      return <IconCubeSend {...iconProps} />
+    case 'BoxGeometry':
+      return <IconBox {...iconProps} />
+    case 'SphereGeometry':
+      return <IconSphere {...iconProps} />
+    case 'CylinderGeometry':
+      return <IconCylinder {...iconProps} />
+    case 'ConeGeometry':
+      return <IconCone {...iconProps} />
+    case 'PlaneGeometry':
+    case 'PlaneBufferGeometry':
+      return <IconRectangle {...iconProps} />
+
+    // Materials
+    case 'MeshStandardMaterial':
+    case 'MeshBasicMaterial':
+    case 'MeshPhongMaterial':
+    case 'MeshLambertMaterial':
+    case 'MeshPhysicalMaterial':
+    case 'MeshToonMaterial':
+      return <IconBrush {...iconProps} />
+
+    // Special objects
+    case 'SkinnedMesh':
+      return <IconShirt {...iconProps} />
+    case 'Skeleton':
+    case 'Bone':
+      return <IconBone {...iconProps} />
+    case 'Sprite':
+    case 'Particle':
+      return <IconSparkles {...iconProps} />
+    case 'Line':
+    case 'LineSegments':
+      return <IconShadow {...iconProps} />
+
+    // Groups and default
+    case 'Group':
+    case 'Scene':
+      return <IconCircleDashed {...iconProps} />
+    default:
+      // Default to group icon or cube based on whether it has children
+      return hasChildren ? <IconCircleDashed {...iconProps} /> : <IconCube {...iconProps} />
+  }
+}
+
+/**
  * Node component for rendering each item in the tree
  */
 function Node({ node, style, dragHandle }: NodeRendererProps<OutlinerNode>) {
-  const isLeaf = !node.children || node.children.length === 0
-  
-  // Determine which icon to show based on the node type
-  const NodeIcon = isLeaf ? CubeIcon : CircleIcon
-  
+  // Check if the node has children to determine whether to show disclosure indicators
+  const hasChildren = node.data.children && node.data.children.length > 0
+
+  // Get the appropriate icon for this object type
+  const nodeIcon = getIconForObjectType(node.data.type, hasChildren)
+
   // Calculate the indentation level from the style.paddingLeft
   const indentLevel = Number(style.paddingLeft?.toString().replace('px', '') || 0) / 24
 
   return (
-    <div 
-      ref={dragHandle} 
-      style={style} 
+    <div
+      ref={dragHandle}
+      style={style}
       className={`outliner-node ${node.state.isSelected ? 'selected' : ''} ${!node.data.visible ? 'hidden' : ''}`}
     >
-      <div className="indent-lines">
+      <div className='indent-lines'>
         {Array.from({ length: indentLevel }).map((_, index) => (
-          <div key={index} className="indent-line"></div>
+          <div key={index} className='indent-line'></div>
         ))}
       </div>
-      
-      {/* Expand/collapse toggle */}
-      <span className="toggle-icon" onClick={() => node.isInternal && node.toggle()}>
-        {node.isInternal && (node.isOpen ? <ChevronDown /> : <ChevronRight />)}
+
+      {/* Expand/collapse toggle - only show if node has children */}
+      <span className='toggle-icon' onClick={() => hasChildren && node.toggle()}>
+        {hasChildren &&
+          (node.isOpen ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />)}
       </span>
-      
-      {/* Node icon */}
-      <NodeIcon />
-      
+
+      {/* Node icon based on object type */}
+      <span className='node-icon'>{nodeIcon}</span>
+
       {/* Node content */}
-      <div className="node-content">
-        <span className="node-type">{node.data.type}</span>
-        <span className="node-name">{node.data.name || '<unnamed>'}</span>
+      <div className='node-content'>
+        <span className='node-type'>{node.data.type}</span>
+        <span className='node-name'>{node.data.name || '<unnamed>'}</span>
       </div>
-      
+
       {/* Focus icon - will be implemented in Phase 5 */}
-      <span className="focus-icon" title="Focus on object (F)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+      <span className='focus-icon' title='Focus on object (F)'>
+        <svg
+          width='16'
+          height='16'
+          viewBox='0 0 24 24'
+          fill='none'
+          xmlns='http://www.w3.org/2000/svg'
+        >
+          <circle cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='2' />
+          <circle cx='12' cy='12' r='3' stroke='currentColor' strokeWidth='2' />
         </svg>
       </span>
     </div>
@@ -102,10 +176,10 @@ export function SceneGraph({
   onNodeFocus
 }: SceneGraphProps) {
   const treeRef = useRef<TreeApi<OutlinerNode>>(null)
-  
+
   // Map the objectId of the selected object to be used in the tree
   const selectedId = selectedObject?.uuid || undefined
-  
+
   // Search function for filtering the tree
   const searchMatch = (node: NodeApi<OutlinerNode>, term: string) => {
     const searchLower = term.toLowerCase()
@@ -114,19 +188,19 @@ export function SceneGraph({
       node.data.type.toLowerCase().includes(searchLower)
     )
   }
-  
+
   // Handle node activation (when a node is clicked)
   const handleActivate = (node: NodeApi<OutlinerNode>) => {
     onNodeSelect(node.id)
   }
-  
+
   // Handle focus icon click
   const handleFocus = (nodeId: string) => {
     onNodeFocus(nodeId)
   }
 
   return (
-    <div className="scene-graph-container">
+    <div className='scene-graph-container'>
       <Tree
         ref={treeRef}
         data={sceneGraph}
@@ -144,7 +218,7 @@ export function SceneGraph({
         disableDrag={true}
         disableDrop={true}
         disableMultiSelection={true}
-        className="scene-graph-tree"
+        className='scene-graph-tree'
       >
         {Node}
       </Tree>
@@ -156,15 +230,11 @@ export function SceneGraph({
  * Container component that connects to the store
  */
 export function SceneGraphContainer() {
-  const { 
-    sceneGraph, 
-    selectedObject, 
-    selectObject, 
-    getObjectById, 
-    focusObject,
-    searchTerm 
-  } = useInspectorStore()
-  
+  const { sceneGraph, selectedObject, selectObject, getObjectById, focusObject, searchTerm } =
+    useInspectorStore()
+
+  const containerRef = useRef<HTMLDivElement>(null)
+
   // Handle click on a node in the outliner
   const handleNodeSelect = (nodeId: string) => {
     const object = getObjectById(nodeId)
@@ -172,7 +242,7 @@ export function SceneGraphContainer() {
       selectObject(object)
     }
   }
-  
+
   // Handle focus icon click
   const handleNodeFocus = (nodeId: string) => {
     const object = getObjectById(nodeId)
@@ -181,13 +251,32 @@ export function SceneGraphContainer() {
     }
   }
 
+  // Prevent wheel events from propagating to the canvas
+  useEffect(() => {
+    const container = containerRef.current
+
+    if (!container) return
+
+    const handleWheel = (e: WheelEvent) => {
+      e.stopPropagation()
+    }
+
+    container.addEventListener('wheel', handleWheel, { passive: false })
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel)
+    }
+  }, [])
+
   return (
-    <SceneGraph
-      sceneGraph={sceneGraph}
-      selectedObject={selectedObject}
-      searchTerm={searchTerm}
-      onNodeSelect={handleNodeSelect}
-      onNodeFocus={handleNodeFocus}
-    />
+    <div ref={containerRef} className='scene-graph-container'>
+      <SceneGraph
+        sceneGraph={sceneGraph}
+        selectedObject={selectedObject}
+        searchTerm={searchTerm}
+        onNodeSelect={handleNodeSelect}
+        onNodeFocus={handleNodeFocus}
+      />
+    </div>
   )
 }

@@ -5,6 +5,14 @@ export * from './components/ThreeInspector'
 export { type OutlinerNode } from './store/inspectorStore'
 export { type ObjectFilter, type ObjectFilterType } from './store/objectFilters'
 
+// Export details panel extension system
+export {
+  registerCustomDetailPanel,
+  createDetailPanel,
+  type DetailPanelComponent,
+  type DetailPanelEntry
+} from './components/ui/details/registry'
+
 // Export utility functions that might be useful for users
 export {
   findObjectByName,
