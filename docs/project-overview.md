@@ -60,10 +60,10 @@ This project is a tool for all Three.js developers to simplify inspection of Thr
 
 ### Phase 3: Scene Integration
 
-- [ ] Develop scene graph traversal and monitoring
-- [ ] Implement object selection mechanism
-- [ ] Create object filtering system
-- [ ] Build scene graph change detection
+- [x] Develop scene graph traversal and monitoring
+- [x] Implement object selection mechanism
+- [x] Create object filtering system
+- [x] Build scene graph change detection
 
 ### Phase 4: User Interface
 

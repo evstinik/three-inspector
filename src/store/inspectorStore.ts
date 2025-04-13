@@ -15,8 +15,8 @@ export interface OutlinerNode {
   children: OutlinerNode[]
   /** Visibility state */
   visible?: boolean
-  /** Whether this node is expanded in the outliner */
-  isExpanded?: boolean
+  /** Whether this node is expanded in the outliner - for compatibility with react-arborist */
+  isOpen?: boolean
 }
 
 // Main state interface for the inspector
@@ -47,8 +47,6 @@ interface InspectorState {
   sceneGraph: OutlinerNode[]
   updateSceneGraph: (nodes: OutlinerNode[]) => void
   refreshSceneGraph: () => void
-  // Toggle node expansion in outliner
-  toggleNodeExpansion: (nodeId: string) => void
 
   // Filter state
   searchTerm: string
@@ -108,24 +106,6 @@ export const useInspectorStore = create<InspectorState>()(
         set({ sceneGraph: graph })
       }
     },
-    toggleNodeExpansion: (nodeId) => {
-      set((state) => {
-        // Create a deep copy of the scene graph to modify
-        const updateNodeExpansion = (nodes: OutlinerNode[]): OutlinerNode[] => {
-          return nodes.map((node) => {
-            if (node.objectId === nodeId) {
-              return { ...node, isExpanded: !node.isExpanded }
-            }
-            if (node.children.length > 0) {
-              return { ...node, children: updateNodeExpansion(node.children) }
-            }
-            return node
-          })
-        }
-
-        return { sceneGraph: updateNodeExpansion(state.sceneGraph) }
-      })
-    },
 
     // Filter state
     searchTerm: '',
@@ -145,7 +125,7 @@ export function buildSceneGraph(root: Object3D): OutlinerNode[] {
         name: child.name || child.type,
         type: child.type,
         visible: child.visible,
-        isExpanded: false, // Default to collapsed
+        isOpen: false, // Default to collapsed, react-arborist will manage this
         children: createNodes(child)
       })
     )
@@ -153,6 +133,8 @@ export function buildSceneGraph(root: Object3D): OutlinerNode[] {
 
   return createNodes(root)
 }
+
+// Removed toggleNodeExpansion since react-arborist will manage node expansion state
 
 // Setup listener for scene graph changes with improved filtering
 export function setupSceneGraphListener(

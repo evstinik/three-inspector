@@ -52,6 +52,7 @@
   "license": "MIT",
   "dependencies": {
     "@mantine/hooks": "^7.17.4",
+    "react-arborist": "^3.4.3",
     "zustand": "^5.0.3"
   }
 }
