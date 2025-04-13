@@ -139,6 +139,17 @@ export function InspectorUI({}: InspectorUIProps) {
       // Create a container div for our UI
       const container = document.createElement('div')
       container.id = 'three-inspector-container'
+
+      // Apply critical styles directly to ensure it's correctly positioned
+      container.style.position = 'absolute'
+      container.style.top = '0'
+      container.style.left = '0'
+      container.style.width = '100%'
+      container.style.height = '100%'
+      container.style.pointerEvents = 'none' // Let events pass through to canvas except where UI elements exist
+      container.style.zIndex = '9998' // Just below the actual UI elements
+
+      // Add container to DOM
       canvasParent.appendChild(container)
 
       // Create a React root

@@ -1,5 +1,4 @@
 import { Object3D, Mesh, Light, Camera, InstancedMesh, Scene } from 'three'
-import { ReactNode } from 'react'
 
 /**
  * Type for a panel component that renders details about a 3D object
