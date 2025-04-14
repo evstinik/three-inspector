@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { Object3D, Scene, Camera, WebGLRenderer, Vector3, PerspectiveCamera } from 'three'
-import { useFilterStore } from './objectFilters'
 
 // Define the OutlinerNode interface directly in this module
 export interface OutlinerNode {
@@ -129,11 +128,8 @@ export const useInspectorStore = create<InspectorState>()(
 
 // Helper function to build the scene graph for the outliner with filtering
 export function buildSceneGraph(root: Object3D): OutlinerNode[] {
-  // Get the filter predicate from the filter store
-  const shouldShowObject = useFilterStore.getState().shouldShowObject
-
   const createNodes = (obj: Object3D): OutlinerNode[] => {
-    return obj.children.filter(shouldShowObject).map(
+    return obj.children.map(
       (child): OutlinerNode => ({
         objectId: child.uuid,
         name: child.name || child.type,

@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { useThree } from '@react-three/fiber'
-import { useInspectorStore, useFilterStore, createNameFilter, createTypeFilter } from '../../store'
+import { useInspectorStore } from '../../store'
 import { SceneGraphContainer } from './SceneGraph'
 import { ObjectDetailsPanelContainer } from './details'
 import './InspectorUI.css'
+import { useDebouncedValue } from '@mantine/hooks'
 
 // Interface for the InspectorUI component props
 interface InspectorUIProps {
@@ -15,39 +16,19 @@ interface InspectorUIProps {
  * The actual DOM-based UI component that will be rendered into the root
  */
 export function InspectorUIContent({ onClose }: { onClose: () => void }) {
-  const { refreshSceneGraph } = useInspectorStore()
-  const { filters, addFilter, removeFilter, toggleFilter, clearFilters } = useFilterStore()
-  const [searchTerm, setSearchTerm] = useState('')
+  const { setSearchTerm } = useInspectorStore()
+  const [localSearchTerm, setLocalSearchTerm] = useState(
+    localStorage.getItem('three-inspector-search') || ''
+  )
 
-  // Handle filter changes
-  const handleAddFilter = () => {
-    // Create a name filter based on the search term if it exists
-    if (searchTerm) {
-      addFilter(createNameFilter(searchTerm))
-      setSearchTerm('') // Clear the search term after adding filter
+  // Debounce the search term with a 300ms delay
+  const [debouncedSearchTerm] = useDebouncedValue(localSearchTerm, 300)
 
-      // Refresh the scene graph to apply the filter
-      refreshSceneGraph()
-    }
-  }
-
-  // Clear all filters
-  const handleClearFilters = () => {
-    clearFilters()
-    refreshSceneGraph()
-  }
-
-  // Handle toggle filter and refresh scene graph
-  const handleToggleFilter = (id: string) => {
-    toggleFilter(id)
-    refreshSceneGraph()
-  }
-
-  // Handle remove filter and refresh scene graph
-  const handleRemoveFilter = (id: string) => {
-    removeFilter(id)
-    refreshSceneGraph()
-  }
+  // Update the store's search term whenever the debounced value changes
+  useEffect(() => {
+    setSearchTerm(debouncedSearchTerm)
+    localStorage.setItem('three-inspector-search', debouncedSearchTerm)
+  }, [debouncedSearchTerm, setSearchTerm])
 
   return (
     <div className='three-inspector-ui'>
@@ -75,43 +56,11 @@ export function InspectorUIContent({ onClose }: { onClose: () => void }) {
             <input
               type='text'
               placeholder='Search objects...'
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddFilter()}
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
             />
-            <button onClick={handleAddFilter}>Add Filter</button>
           </div>
-
-          {/* Active filters display */}
-          {filters.length > 0 && (
-            <div className='active-filters'>
-              <div className='filter-header'>
-                <h3>Active Filters</h3>
-                <button className='filter-clear-btn' onClick={handleClearFilters}>
-                  Clear All
-                </button>
-              </div>
-              {filters.map((filter) => (
-                <div key={filter.id} className='filter-tag'>
-                  <span>
-                    {filter.type}: {filter.pattern}
-                  </span>
-                  <button
-                    className={`filter-toggle-btn ${filter.enabled ? 'enabled' : 'disabled'}`}
-                    onClick={() => handleToggleFilter(filter.id)}
-                  >
-                    {filter.enabled ? 'On' : 'Off'}
-                  </button>
-                  <button
-                    className='filter-remove-btn'
-                    onClick={() => handleRemoveFilter(filter.id)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
 
           {/* Scene graph display using our dedicated component */}
           <SceneGraphContainer />
