@@ -52,7 +52,17 @@ export function InspectorUIContent({ onClose }: { onClose: () => void }) {
   return (
     <div className='three-inspector-ui'>
       <div className='three-inspector-header'>
-        <h1>Three.js Inspector</h1>
+        <h1>
+          Three.js Inspector
+          <a
+            href='https://tally.so/r/nG75K2'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='feedback-link'
+          >
+            Feedback
+          </a>
+        </h1>
         <button onClick={onClose}>Close</button>
       </div>
 
