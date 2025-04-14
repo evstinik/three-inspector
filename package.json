@@ -1,6 +1,6 @@
 {
   "name": "three-inspector",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Three.js scene inspector for React Three Fiber applications",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
