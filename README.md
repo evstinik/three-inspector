@@ -6,7 +6,7 @@
 
 A powerful scene inspector for React Three Fiber applications, inspired by Unity's scene hierarchy and inspector panels.
 
-![Three Inspector Demo](https://placeholder.for.demo.screenshot.png)
+![Three Inspector Demo](./docs/three-inspector-preview.webp)
 
 ## Features
 
