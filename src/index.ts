@@ -3,7 +3,6 @@ export * from './components/ThreeInspector'
 
 // Export types for external use
 export { type OutlinerNode } from './store/inspectorStore'
-export { type ObjectFilter, type ObjectFilterType } from './store/objectFilters'
 
 // Export details panel extension system
 export {

@@ -1,9 +1,8 @@
 import React, { useEffect, useCallback } from 'react'
-import { useThree, useFrame } from '@react-three/fiber'
+import { useThree } from '@react-three/fiber'
 import {
   useInspectorStore,
   useInspectorHotkeys,
-  useFilterStore,
   setupSceneGraphListener,
   buildSceneGraph
 } from '../store'
